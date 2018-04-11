@@ -167,12 +167,12 @@ graph = tf.Graph()
 with graph.as_default():
   # Input data.
   with tf.name_scope('inputs'):
-      train_inputs = tf.placeholder(tf.int32, shape=[batch_size])
-      train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])
-      valid_dataset = tf.constant(valid_examples, dtype=tf.int32)
+    train_inputs = tf.placeholder(tf.int32, shape=[batch_size])
+    train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])
+    valid_dataset = tf.constant(valid_examples, dtype=tf.int32)
 
-    # Ops and variables pinned to the CPU because of missing GPU implementation
-    with tf.device('/cpu:0'):
+  # Ops and variables pinned to the CPU because of missing GPU implementation
+  with tf.device('/cpu:0'):
     # Look up embeddings for inputs.
     with tf.name_scope('embeddings'):
       embeddings = tf.Variable(
