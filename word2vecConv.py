@@ -18,6 +18,7 @@ import numpy as np
 from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
+import  tensorlayer as tl
 
 from tensorflow.contrib.tensorboard.plugins import projector
 
@@ -188,23 +189,25 @@ with tf.Session() as sess:
     embed_label = tf.nn.embedding_lookup(embeddings, conv_train_labels);
     embed_image_format = tf.reshape(embed_train, [batch_size, conv_lookback, embedding_size, 1], name = "embed_image")
 
-    conv1 = tf.layers.conv2d(
-      inputs=embed_image_format,
-      filters= n_filters,
-      kernel_size = [conv_lookback,1],
-      padding = "valid",
-      activation = tf.nn.relu
-      )
+    with tf.variable_scope("convNet"):
+      conv1 = tf.layers.conv2d(
+        inputs=embed_image_format,
+        filters= n_filters,
+        kernel_size = [conv_lookback,1],
+        padding = "valid",
+        activation = tf.nn.relu
+        )
 
-    flatten = tf.reshape(conv1, [-1, n_filters * embedding_size])
-    dense = tf.layers.dense(inputs=flatten, units=2048, activation = tf.nn.relu)
-    dropout = tf.layers.dropout(inputs=dense, rate = .5)
-    embedding_guess = tf.layers.dense(inputs=dropout, units=embedding_size)
+      flatten = tf.reshape(conv1, [-1, n_filters * embedding_size])
+      dense = tf.layers.dense(inputs=flatten, units=2048, activation = tf.nn.relu)
+      dropout = tf.layers.dropout(inputs=dense, rate = .5)
+      embedding_guess = tf.layers.dense(inputs=dropout, units=embedding_size)
 
     loss = tf.reduce_mean(tf.square(embedding_guess - embed_label), name = "conv_loss_op")
     loss_summary = tf.summary.scalar('loss', loss)
 
-    optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss)
+    t_vars = tl.layers.get_variables_with_name('convNet', True, True)
+    optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss, var_list = t_vars)
 
     norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
     normalized_embeddings = embeddings / norm
@@ -228,6 +231,7 @@ with tf.Session() as sess:
       #print (np.shape(batch_inputs))
       #print (np.shape(batch_labels))
       feed_dict = {conv_train_inputs: batch_inputs, conv_train_labels: batch_labels}
+      #print(sess.run(embeddings[0:1,0:1]))
 
       #run_metadata = tf.RunMetadata()
       if step % step_test == 0:
