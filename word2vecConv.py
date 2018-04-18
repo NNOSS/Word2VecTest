@@ -120,7 +120,7 @@ def generate_batch(batch_size, num_back):
   labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32)
   #span = num_back#2 * skip_window + 1  # [ skip_window target skip_window ]
   #buffer = collections.deque(maxlen=span)  # pylint: disable=redefined-builtin
-  if data_index > len(data):
+  if data_index >= len(data):
     data_index = num_back
   elif data_index < num_back:
     data_index = num_back
@@ -143,7 +143,7 @@ def generate_batch(batch_size, num_back):
       data_index = num_back
     else:
       #buffer.append(data[data_index])
-      data_index = random.randint(num_back, len(data))
+      data_index = random.randint(num_back, len(data)-1)
   # Backtrack a little bit to avoid skipping words in the end of a batch
   #data_index = (data_index + len(data)) % len(data)
   return batch, labels
@@ -156,14 +156,14 @@ for i in range(8):
 
 # Step 4: Build and train a CNN on embeddings
 
-batch_size = 1
+batch_size = 30
 embedding_size = 128  # Dimension of the embedding vector.
 #skip_window = 1  # How many words to consider left and right.
 #num_skips = 2  # How many times to reuse an input to generate a label.
 #num_sampled = 64  # Number of negative examples to sample.
-learning_rate = .0001 # 1 seems high, but it was the default value in this code
+learning_rate = .001 # 1 seems high, but it was the default value in this code
 step_summary = 100; #steps until a summary is written
-conv_lookback = 10; #how many words to use for predicting next word
+conv_lookback = 4; #how many words to use for predicting next word
 n_filters = 64
 num_steps = 500000
 step_test = 500
