@@ -164,7 +164,7 @@ learning_rate = .0001 # 1 seems high, but it was the default value in this code
 step_summary = 10; #steps until a summary is written
 conv_lookback = 10; #how many words to use for predicting next word
 n_filters = 64
-num_steps = 10000
+num_steps = 500000
 step_test = 100
 max_prints = 10
 
@@ -198,7 +198,7 @@ with tf.Session() as sess:
 
     flatten = tf.reshape(conv1, [-1, n_filters * embedding_size])
     dense = tf.layers.dense(inputs=flatten, units=2048, activation = tf.nn.relu)
-    dropout = tf.layer.dropout(inputs=dense, rate = .5)
+    dropout = tf.layers.dropout(inputs=dense, rate = .5)
     embedding_guess = tf.layers.dense(inputs=dropout, units=embedding_size)
 
     loss = tf.reduce_mean(tf.square(embedding_guess - embed_label), name = "conv_loss_op")
