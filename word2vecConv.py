@@ -155,18 +155,18 @@ for i in range(8):
 
 # Step 4: Build and train a CNN on embeddings
 
-batch_size = 10
+batch_size = 1
 embedding_size = 128  # Dimension of the embedding vector.
 #skip_window = 1  # How many words to consider left and right.
 #num_skips = 2  # How many times to reuse an input to generate a label.
 #num_sampled = 64  # Number of negative examples to sample.
 learning_rate = .0001 # 1 seems high, but it was the default value in this code
-step_summary = 10; #steps until a summary is written
+step_summary = 100; #steps until a summary is written
 conv_lookback = 10; #how many words to use for predicting next word
 n_filters = 64
 num_steps = 500000
-step_test = 100
-max_prints = 10
+step_test = 500
+max_prints = 20
 
 
 data_index = conv_lookback
