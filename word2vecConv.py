@@ -142,7 +142,7 @@ def generate_batch(batch_size, num_back):
       data_index = num_back
     else:
       #buffer.append(data[data_index])
-      data_index += 1
+      data_index = random.randint(num_back, len(data))
   # Backtrack a little bit to avoid skipping words in the end of a batch
   #data_index = (data_index + len(data)) % len(data)
   return batch, labels
@@ -198,7 +198,7 @@ with tf.Session() as sess:
 
     flatten = tf.reshape(conv1, [-1, n_filters * embedding_size])
     dense = tf.layers.dense(inputs=flatten, units=2048, activation = tf.nn.relu)
-    dropout = tf.layer.dropout(inputs=dense, rate = .5)
+    dropout = tf.layers.dropout(inputs=dense, rate = .5)
     embedding_guess = tf.layers.dense(inputs=dropout, units=embedding_size)
 
     loss = tf.reduce_mean(tf.square(embedding_guess - embed_label), name = "conv_loss_op")

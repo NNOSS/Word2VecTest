@@ -38,7 +38,7 @@ if not os.path.exists(FLAGS.log_dir):
   os.makedirs(FLAGS.log_dir)
 
 # Step 1: Download the data.
-url = 'http://mattmahoney.net/dc/'
+url = 'http://www.gutenberg.org/cache/epub/1661'
 
 
 # pylint: disable=redefined-outer-name
@@ -58,7 +58,7 @@ def maybe_download(filename, expected_bytes):
   return local_filename
 
 
-filename = maybe_download('text8.zip', 31344016)
+filename = maybe_download('pg1661.txt', 31344016)
 
 
 # Read the data into a list of strings.
