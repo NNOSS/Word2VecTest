@@ -60,7 +60,7 @@ def maybe_download(filename, expected_bytes):
   return local_filename"""
 
 
-filename = "./fic_data.txt" #maybe_download('text8.zip', 31344016)
+filename = "./all_data.txt" #maybe_download('text8.zip', 31344016)
 
 
 # Read the data into a list of strings.
@@ -89,7 +89,7 @@ vocabulary = read_data(filename)
 print('Data size', len(vocabulary))
 
 # Step 2: Build the dictionary and replace rare words with UNK token.
-vocabulary_size = 27000
+vocabulary_size = 50000
 
 
 def build_dataset(words, n_words):
@@ -104,7 +104,6 @@ def build_dataset(words, n_words):
   for word in words:
     index = dictionary.get(word, 0)
     if index == 0:  # dictionary['UNK']
-      print("wow")
       unk_count += 1
     data.append(index)
   count[0][1] = unk_count
@@ -164,12 +163,12 @@ for i in range(8):
 
 # Step 4: Build and train a skip-gram model.
 
-batch_size = 512
+batch_size = 128
 embedding_size = 128  # Dimension of the embedding vector.
 skip_window = 4  # How many words to consider left and right.
 num_skips = 8  # How many times to reuse an input to generate a label.
-num_sampled = 32  # Number of negative examples to sample.
-learning_rate = 1.0 # 1 seems high, but it was the default value in this code
+num_sampled = 64  # Number of negative examples to sample.
+learning_rate = .5 # 1 seems high, but it was the default value in this code
 
 # We pick a random validation set to sample nearest neighbors. Here we limit the
 # validation samples to the words that have a low numeric ID, which by
@@ -245,7 +244,7 @@ with graph.as_default():
   saver = tf.train.Saver()
 
 # Step 5: Begin training.
-num_steps = 1000001
+num_steps = 5000001
 
 with tf.Session(graph=graph) as session:
   # Open a writer to write summaries.
