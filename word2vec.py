@@ -77,7 +77,7 @@ def read_data(filename):
       m = pattern.match(line)
       if (m != None):
         #print(m.group(0))
-        data.append(tf.compat.as_str(m.group(0)))
+        data.append(tf.compat.as_str(m.group(0)).lower())
     #data = tf.compat.as_str(f.read()).split()
   return data
   """with zipfile.ZipFile(filename) as f:
@@ -163,12 +163,12 @@ for i in range(8):
 
 # Step 4: Build and train a skip-gram model.
 
-batch_size = 128
+batch_size = 256
 embedding_size = 128  # Dimension of the embedding vector.
-skip_window = 4  # How many words to consider left and right.
-num_skips = 8  # How many times to reuse an input to generate a label.
+skip_window = 2  # How many words to consider left and right.
+num_skips = 4  # How many times to reuse an input to generate a label.
 num_sampled = 64  # Number of negative examples to sample.
-learning_rate = .5 # 1 seems high, but it was the default value in this code
+learning_rate = .1 # 1 seems high, but it was the default value in this code
 
 # We pick a random validation set to sample nearest neighbors. Here we limit the
 # validation samples to the words that have a low numeric ID, which by
@@ -186,6 +186,10 @@ with graph.as_default():
     train_inputs = tf.placeholder(tf.int32, shape=[batch_size])
     train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])
     valid_dataset = tf.constant(valid_examples, dtype=tf.int32)
+
+  with tf.name_scope('learn_rate'):
+    l_rate = tf.Variable(learning_rate, name = "learn_rate", dtype = tf.float32);
+    #anneal_op = l_rate.assign(l_rate / 3)
 
   # Ops and variables pinned to the CPU because of missing GPU implementation
   with tf.device('/cpu:0'):
@@ -224,7 +228,7 @@ with graph.as_default():
 
     # Construct the SGD optimizer using a learning rate of 1.0.
     with tf.name_scope('optimizer'):
-      optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
+      optimizer = tf.train.GradientDescentOptimizer(l_rate).minimize(loss)
 
     # Compute the cosine similarity between minibatch examples and all embeddings.
     norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True))
@@ -244,7 +248,7 @@ with graph.as_default():
   saver = tf.train.Saver()
 
 # Step 5: Begin training.
-num_steps = 5000001
+num_steps = 1100001
 
 with tf.Session(graph=graph) as session:
   # Open a writer to write summaries.
@@ -300,6 +304,14 @@ with tf.Session(graph=graph) as session:
           close_word = reverse_dictionary[nearest[k]]
           log_str = '%s %s,' % (log_str, close_word)
         print(log_str)
+
+        # Save the model for checkpoints.
+        saver.save(session, os.path.join(FLAGS.log_dir, 'model.ckpt'))
+
+    #if step % 100000 == 0 and step != 0:
+      #session.run(anneal_op);
+      #print("learning rate set to %f" % session.run(l_rate))
+
   final_embeddings = normalized_embeddings.eval()
 
   # Write corresponding labels for the embeddings.
@@ -307,8 +319,6 @@ with tf.Session(graph=graph) as session:
     for i in xrange(vocabulary_size):
       f.write(reverse_dictionary[i] + '\n')
 
-  # Save the model for checkpoints.
-  saver.save(session, os.path.join(FLAGS.log_dir, 'model.ckpt'))
 
   # Create a configuration for visualizing embeddings with the labels in TensorBoard.
   config = projector.ProjectorConfig()
