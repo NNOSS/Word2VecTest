@@ -156,14 +156,14 @@ for i in range(8):
 
 # Step 4: Build and train a CNN on embeddings
 
-batch_size = 30
-embedding_size = 128  # Dimension of the embedding vector.
+batch_size = 100
+embedding_size = 128 # Dimension of the embedding vector.
 #skip_window = 1  # How many words to consider left and right.
 #num_skips = 2  # How many times to reuse an input to generate a label.
 #num_sampled = 64  # Number of negative examples to sample.
-learning_rate = .001 # 1 seems high, but it was the default value in this code
+learning_rate = .0001 # 1 seems high, but it was the default value in this code
 step_summary = 100; #steps until a summary is written
-conv_lookback = 4; #how many words to use for predicting next word
+conv_lookback = 10; #how many words to use for predicting next word
 n_filters = 64
 num_steps = 500000
 step_test = 500
@@ -198,10 +198,10 @@ with tf.Session() as sess:
         activation = tf.nn.relu
         )
 
-      flatten = tf.reshape(conv1, [-1, n_filters * embedding_size])
-      dense = tf.layers.dense(inputs=flatten, units=2048, activation = tf.nn.relu)
-      dropout = tf.layers.dropout(inputs=dense, rate = .5)
-      embedding_guess = tf.layers.dense(inputs=dropout, units=embedding_size)
+      flatten = tf.reshape(conv1, [-1, n_filters * embedding_size], name = "flat")
+      dense = tf.layers.dense(inputs=flatten, units=2048, activation = tf.nn.relu, name = "mydense")
+      dropout = tf.layers.dropout(inputs=dense, rate = .5, name = "dropout")
+      embedding_guess = tf.layers.dense(inputs=dropout, units=embedding_size, name = "embedding_guess")
 
     loss = tf.reduce_mean(tf.square(embedding_guess - embed_label), name = "conv_loss_op")
     loss_summary = tf.summary.scalar('loss', loss)
@@ -231,7 +231,7 @@ with tf.Session() as sess:
       #print (np.shape(batch_inputs))
       #print (np.shape(batch_labels))
       feed_dict = {conv_train_inputs: batch_inputs, conv_train_labels: batch_labels}
-      #print(sess.run(embeddings[0:1,0:1]))
+      #print(sess.run(embeddings[0:10,0:10]))
 
       #run_metadata = tf.RunMetadata()
       if step % step_test == 0:
