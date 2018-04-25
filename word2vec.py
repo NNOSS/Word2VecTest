@@ -19,6 +19,8 @@ from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+import re
+
 from tensorflow.contrib.tensorboard.plugins import projector
 
 # Give a folder path as an argument with '--log_dir' to save
@@ -38,12 +40,12 @@ if not os.path.exists(FLAGS.log_dir):
   os.makedirs(FLAGS.log_dir)
 
 # Step 1: Download the data.
-url = 'http://mattmahoney.net/dc/'
+"""url = 'http://mattmahoney.net/dc/'
 
 
 # pylint: disable=redefined-outer-name
 def maybe_download(filename, expected_bytes):
-  """Download a file if not present, and make sure it's the right size."""
+  ""Download a file if not present, and make sure it's the right size.""
   local_filename = os.path.join(gettempdir(), filename)
   if not os.path.exists(local_filename):
     local_filename, _ = urllib.request.urlretrieve(url + filename,
@@ -55,25 +57,39 @@ def maybe_download(filename, expected_bytes):
     print(statinfo.st_size)
     raise Exception('Failed to verify ' + local_filename +
                     '. Can you get to it with a browser?')
-  return local_filename
+  return local_filename"""
 
 
-filename = maybe_download('text8.zip', 31344016)
+filename = "./fic_data.txt" #maybe_download('text8.zip', 31344016)
 
 
 # Read the data into a list of strings.
 def read_data(filename):
   """Extract the first file enclosed in a zip file as a list of words."""
-  with zipfile.ZipFile(filename) as f:
-    data = tf.compat.as_str(f.read(f.namelist()[0])).split()
+  with open(filename, 'rb') as f:
+    data = []
+    pattern = re.compile("^\w\S+")
+    #m = pattern.match(f.read())#.split()
+    
+
+
+    for line in f.readlines():
+      m = pattern.match(line)
+      if (m != None):
+        #print(m.group(0))
+        data.append(tf.compat.as_str(m.group(0)))
+    #data = tf.compat.as_str(f.read()).split()
   return data
+  """with zipfile.ZipFile(filename) as f:
+    data = tf.compat.as_str(f.read(f.namelist()[0])).split()
+  return data"""
 
 
 vocabulary = read_data(filename)
 print('Data size', len(vocabulary))
 
 # Step 2: Build the dictionary and replace rare words with UNK token.
-vocabulary_size = 50000
+vocabulary_size = 27000
 
 
 def build_dataset(words, n_words):
@@ -88,6 +104,7 @@ def build_dataset(words, n_words):
   for word in words:
     index = dictionary.get(word, 0)
     if index == 0:  # dictionary['UNK']
+      print("wow")
       unk_count += 1
     data.append(index)
   count[0][1] = unk_count
@@ -147,11 +164,11 @@ for i in range(8):
 
 # Step 4: Build and train a skip-gram model.
 
-batch_size = 128
+batch_size = 512
 embedding_size = 128  # Dimension of the embedding vector.
-skip_window = 1  # How many words to consider left and right.
-num_skips = 2  # How many times to reuse an input to generate a label.
-num_sampled = 64  # Number of negative examples to sample.
+skip_window = 4  # How many words to consider left and right.
+num_skips = 8  # How many times to reuse an input to generate a label.
+num_sampled = 32  # Number of negative examples to sample.
 learning_rate = 1.0 # 1 seems high, but it was the default value in this code
 
 # We pick a random validation set to sample nearest neighbors. Here we limit the
@@ -228,7 +245,7 @@ with graph.as_default():
   saver = tf.train.Saver()
 
 # Step 5: Begin training.
-num_steps = 100001
+num_steps = 1000001
 
 with tf.Session(graph=graph) as session:
   # Open a writer to write summaries.
